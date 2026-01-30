@@ -1,0 +1,1516 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="light" />
+  <title>Word Practice 1–200</title>
+  <style>
+    :root{
+      --bg:#fbfbf9;
+      --panel:#ffffff;
+      --text:#111214;
+      --muted:#5b6068;
+      --border:#d9dde3;
+      --shadow: 0 10px 30px rgba(17,18,20,.06);
+      --accent:#1f2a44;
+      --radius:14px;
+      --radius-sm:10px;
+      --fade:.26s;
+    }
+
+    *{ box-sizing:border-box; }
+    html,body{ height:100%; }
+    body{
+      margin:0;
+      background:var(--bg);
+      color:var(--text);
+      font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans JP", "Hiragino Sans", "Hiragino Kaku Gothic ProN", Meiryo, Arial, sans-serif;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+    }
+
+    .app{
+      min-height:100%;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+    }
+
+    .topbar{
+      width:100%;
+      max-width:980px;
+      padding:14px 18px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    }
+
+    .brand{
+      display:flex;
+      align-items:baseline;
+      gap:10px;
+      min-width:0;
+    }
+    .brand-title{
+      font-weight:650;
+      letter-spacing:.02em;
+      color:var(--accent);
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .brand-sub{
+      font-size:12px;
+      color:var(--muted);
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .icon-btn{
+      appearance:none;
+      border:1px solid var(--border);
+      background:var(--panel);
+      color:var(--accent);
+      border-radius:999px;
+      width:40px;
+      height:40px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      cursor:pointer;
+      box-shadow: 0 2px 10px rgba(17,18,20,.04);
+      transition: transform var(--fade) ease, opacity var(--fade) ease, background var(--fade) ease;
+    }
+    .icon-btn:active{ transform: translateY(1px); }
+    .icon-btn[disabled]{ opacity:.45; cursor:not-allowed; }
+
+    main{
+      width:100%;
+      max-width:980px;
+      padding: 0 18px 90px;
+      display:flex;
+      justify-content:center;
+    }
+
+    .stage{
+      width:100%;
+      max-width:720px;
+    }
+
+    .view{ display:none; }
+    .view.active{ display:block; }
+
+    /* Title view */
+    .hero{
+      background: linear-gradient(180deg, rgba(31,42,68,.06), rgba(31,42,68,0) 62%);
+      border:1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 26px 22px 22px;
+      box-shadow: var(--shadow);
+      overflow:hidden;
+      position:relative;
+    }
+    .hero::after{
+      content:"";
+      position:absolute;
+      inset:-40% -30%;
+      background: radial-gradient(closest-side, rgba(31,42,68,.10), rgba(31,42,68,0));
+      opacity:.45;
+      pointer-events:none;
+    }
+
+    .h1{
+      margin:0;
+      font-size:28px;
+      font-weight:720;
+      letter-spacing:.02em;
+      color:var(--accent);
+    }
+    .subtitle{
+      margin:10px 0 0;
+      color:var(--muted);
+      font-size:14px;
+      line-height:1.6;
+    }
+
+    .actions{
+      margin-top:18px;
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:10px;
+    }
+    @media (max-width:520px){
+      .actions{ grid-template-columns:1fr; }
+    }
+
+    .btn{
+      appearance:none;
+      border:1px solid var(--border);
+      background:var(--panel);
+      color:var(--text);
+      border-radius: var(--radius-sm);
+      padding: 14px 14px;
+      cursor:pointer;
+      text-align:left;
+      box-shadow: 0 2px 12px rgba(17,18,20,.04);
+      transition: transform var(--fade) ease, border-color var(--fade) ease;
+      display:flex;
+      flex-direction:column;
+      gap:4px;
+      min-height:58px;
+    }
+    .btn:hover{ border-color: rgba(31,42,68,.32); }
+    .btn:active{ transform: translateY(1px); }
+
+    .btn .label{
+      font-weight:650;
+      letter-spacing:.01em;
+      color:var(--accent);
+    }
+    .btn .desc{
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.5;
+    }
+
+    .fineprint{
+      margin-top:16px;
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.6;
+      display:flex;
+      align-items:flex-start;
+      gap:8px;
+    }
+    .badge{
+      border:1px solid var(--border);
+      background: rgba(255,255,255,.7);
+      border-radius:999px;
+      padding:2px 8px;
+      font-size:11px;
+      color:var(--muted);
+      white-space:nowrap;
+    }
+
+    /* Quiz view */
+    .quiz-header{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin: 4px 2px 10px;
+    }
+    .pill{
+      border:1px solid var(--border);
+      border-radius:999px;
+      padding:6px 10px;
+      font-size:12px;
+      color:var(--muted);
+      background: rgba(255,255,255,.7);
+      white-space:nowrap;
+    }
+    .progress{
+      font-size:12px;
+      color:var(--muted);
+      display:flex;
+      align-items:center;
+      gap:10px;
+      min-width:0;
+    }
+    .progress strong{ color:var(--accent); }
+
+    .card{
+      border:1px solid var(--border);
+      border-radius: var(--radius);
+      background:var(--panel);
+      box-shadow: var(--shadow);
+      padding: 18px 18px 16px;
+      transition: opacity var(--fade) ease, transform var(--fade) ease;
+    }
+    .card.fade-out{
+      opacity:0;
+      transform: translateY(2px);
+    }
+
+    .meta{
+      display:flex;
+      justify-content:space-between;
+      align-items:baseline;
+      gap:10px;
+      margin-bottom:10px;
+    }
+    .no{
+      font-size:12px;
+      color:var(--muted);
+    }
+    .dir{
+      font-size:12px;
+      color:var(--muted);
+      white-space:nowrap;
+    }
+
+    .prompt{
+      font-size:26px;
+      font-weight:720;
+      letter-spacing:.02em;
+      line-height:1.2;
+      color:var(--text);
+      word-break:break-word;
+    }
+    .answer-wrap{
+      margin-top:14px;
+      padding-top:14px;
+      border-top:1px dashed rgba(31,42,68,.18);
+    }
+    .answer-label{
+      font-size:11px;
+      text-transform:uppercase;
+      letter-spacing:.10em;
+      color:var(--muted);
+      margin-bottom:6px;
+    }
+    .answer{
+      font-size:18px;
+      line-height:1.55;
+      color:var(--accent);
+      word-break:break-word;
+    }
+    .hidden{ display:none !important; }
+
+    .hand-wrap{
+      margin-top:12px;
+      padding-top:12px;
+      border-top:1px dashed rgba(31,42,68,.18);
+    }
+    .hand-title{
+      font-size:11px;
+      text-transform:uppercase;
+      letter-spacing:.10em;
+      color:var(--muted);
+      margin-bottom:8px;
+    }
+    .hand-canvas{
+      width:100%;
+      height:220px;
+      border:1px solid var(--border);
+      border-radius:12px;
+      background:#fff;
+      display:block;
+      touch-action:none;
+      box-shadow: 0 2px 10px rgba(17,18,20,.04) inset;
+    }
+    .hand-controls{
+      margin-top:8px;
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+      justify-content:space-between;
+    }
+    .hand-controls .left,
+    .hand-controls .right{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+    .hand-note{
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.5;
+    }
+
+    .controls{
+      margin-top:12px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+    .controls .left,
+    .controls .right{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+
+    .cta{
+      appearance:none;
+      border:1px solid rgba(31,42,68,.24);
+      background: rgba(31,42,68,.06);
+      color:var(--accent);
+      border-radius: 999px;
+      padding: 10px 14px;
+      cursor:pointer;
+      font-weight:650;
+      letter-spacing:.01em;
+      transition: transform var(--fade) ease, background var(--fade) ease, opacity var(--fade) ease;
+    }
+    .cta:hover{ background: rgba(31,42,68,.085); }
+    .cta:active{ transform: translateY(1px); }
+
+    .navbtn{
+      appearance:none;
+      border:1px solid var(--border);
+      background:var(--panel);
+      color:var(--text);
+      border-radius: 999px;
+      padding: 10px 14px;
+      cursor:pointer;
+      transition: transform var(--fade) ease, opacity var(--fade) ease, border-color var(--fade) ease;
+    }
+    .navbtn:hover{ border-color: rgba(31,42,68,.32); }
+    .navbtn:active{ transform: translateY(1px); }
+    .navbtn[disabled]{ opacity:.45; cursor:not-allowed; }
+
+    .hint{
+      margin-top:10px;
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.6;
+      padding-left:2px;
+    }
+
+    .debug-bar{
+      margin-top:10px;
+      font-size:11px;
+      color:var(--muted);
+      line-height:1.5;
+      padding: 10px 12px;
+      border:1px dashed rgba(31,42,68,.18);
+      border-radius: var(--radius-sm);
+      background: rgba(255,255,255,.6);
+    }
+    .debug-bar strong{ color: var(--accent); }
+    .debug-bar:empty{ display:none; }
+
+    /* Overlay settings */
+    .overlay{
+      position:fixed;
+      inset:0;
+      background: rgba(17,18,20,.32);
+      display:flex;
+      justify-content:center;
+      align-items:flex-end;
+      padding: 18px;
+      z-index:50;
+      transition: opacity var(--fade) ease;
+    }
+    .overlay.hidden{ display:none; }
+
+    .sheet{
+      width:100%;
+      max-width:720px;
+      border-radius: var(--radius);
+      background: var(--panel);
+      border:1px solid var(--border);
+      box-shadow: 0 24px 80px rgba(17,18,20,.24);
+      overflow:hidden;
+    }
+    .sheet-header{
+      padding: 14px 16px;
+      border-bottom:1px solid var(--border);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    }
+    .sheet-title{
+      font-weight:700;
+      letter-spacing:.02em;
+      color:var(--accent);
+    }
+    .sheet-body{
+      padding: 14px 16px 16px;
+      display:grid;
+      gap:14px;
+    }
+
+    .setting{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:14px;
+      padding: 12px 12px;
+      border:1px solid rgba(31,42,68,.12);
+      border-radius: var(--radius-sm);
+      background: rgba(31,42,68,.03);
+    }
+    .setting .text{
+      min-width:0;
+    }
+    .setting .name{
+      font-weight:650;
+      color:var(--text);
+      margin-bottom:3px;
+    }
+    .setting .note{
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.5;
+    }
+
+    .seg{
+      display:inline-flex;
+      border:1px solid rgba(31,42,68,.18);
+      border-radius:999px;
+      overflow:hidden;
+      background:#fff;
+      flex-shrink:0;
+    }
+    .seg button{
+      appearance:none;
+      border:0;
+      background:transparent;
+      padding:9px 12px;
+      font-size:12px;
+      cursor:pointer;
+      color:var(--muted);
+      transition: background var(--fade) ease, color var(--fade) ease;
+      white-space:nowrap;
+    }
+    .seg button.active{
+      background: rgba(31,42,68,.10);
+      color: var(--accent);
+      font-weight:650;
+    }
+
+    .toggle{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-shrink:0;
+      user-select:none;
+    }
+    .toggle input{
+      width:44px;
+      height:26px;
+      appearance:none;
+      background: rgba(31,42,68,.12);
+      border:1px solid rgba(31,42,68,.14);
+      border-radius:999px;
+      position:relative;
+      outline:none;
+      cursor:pointer;
+      transition: background var(--fade) ease;
+    }
+    .toggle input::after{
+      content:"";
+      width:20px;
+      height:20px;
+      background:#fff;
+      border:1px solid rgba(31,42,68,.18);
+      border-radius:999px;
+      position:absolute;
+      top:50%;
+      left:3px;
+      transform: translateY(-50%);
+      box-shadow: 0 4px 14px rgba(17,18,20,.12);
+      transition: left var(--fade) ease;
+    }
+    .toggle input:checked{
+      background: rgba(31,42,68,.26);
+    }
+    .toggle input:checked::after{
+      left:21px;
+    }
+
+    .sheet-footer{
+      padding: 12px 16px;
+      border-top:1px solid var(--border);
+      display:flex;
+      justify-content:flex-end;
+      gap:10px;
+    }
+
+    .textbtn{
+      appearance:none;
+      border:1px solid var(--border);
+      background:var(--panel);
+      color:var(--text);
+      border-radius:999px;
+      padding:10px 14px;
+      cursor:pointer;
+      transition: transform var(--fade) ease, border-color var(--fade) ease;
+    }
+    .textbtn:hover{ border-color: rgba(31,42,68,.32); }
+    .textbtn:active{ transform: translateY(1px); }
+
+    /* corner footer */
+    .corner{
+      position:fixed;
+      right:10px;
+      bottom:10px;
+      z-index:10;
+      pointer-events:none;
+      opacity:.70;
+    }
+    .version{
+      font-size:11px;
+      color:var(--muted);
+      text-align:right;
+      line-height:1.35;
+      background: rgba(255,255,255,.65);
+      border:1px solid rgba(31,42,68,.10);
+      border-radius:10px;
+      padding:7px 9px;
+      box-shadow: 0 6px 24px rgba(17,18,20,.06);
+      backdrop-filter: blur(6px);
+    }
+
+    @media (prefers-reduced-motion: reduce){
+      *{ transition:none !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app" id="app">
+    <header class="topbar">
+      <button class="icon-btn" id="backBtn" aria-label="タイトルへ戻る" title="タイトルへ戻る" disabled>←</button>
+
+      <div class="brand" aria-label="アプリ名">
+        <div class="brand-title">Word Practice 1–200</div>
+        <div class="brand-sub">confirmed list / offline</div>
+      </div>
+
+      <button class="icon-btn" id="settingsBtn" aria-label="設定" title="設定">⚙</button>
+    </header>
+
+    <main>
+      <div class="stage">
+        <section class="view active" id="viewTitle" aria-label="タイトル画面">
+          <div class="hero">
+            <h1 class="h1">Word Practice 1–200</h1>
+            <p class="subtitle">
+              紙の教材の内容をそのまま使う、最小限の練習用ビューアです。<br>
+              出題方向やアニメーションは右上の⚙から切替できます。
+            </p>
+
+            <div class="actions">
+              <button class="btn" id="startSeqBtn">
+                <div class="label">順番モード</div>
+                <div class="desc">No.1 → No.200 を番号順で確認</div>
+              </button>
+              <button class="btn" id="startRevBtn">
+                <div class="label">逆順モード</div>
+                <div class="desc">No.200 → No.1 を逆順で確認</div>
+              </button>
+
+              <button class="btn" id="startRndBtn">
+                <div class="label">ランダム（1周）</div>
+                <div class="desc">No.1〜200 を重複なしでランダム出題</div>
+              </button>
+              <button class="btn" id="startLoopBtn">
+                <div class="label">ランダム周回（2周）</div>
+                <div class="desc">2周ぶん（重複あり）で回転練習</div>
+              </button>
+
+              <button class="btn" id="startExamBtn">
+                <div class="label">本番モード（100問）</div>
+                <div class="desc">200語から100語を抽選（重複なし）</div>
+              </button>
+              <button class="btn" id="startHandBtn">
+                <div class="label">手書き本番（100問）</div>
+                <div class="desc">日本語→英語でCanvas手書き</div>
+              </button>
+            </div>
+
+            <div class="fineprint" id="titleDebug">
+              <span class="badge">Data</span>
+              <span id="dataStatusText">loading…</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="view" id="viewQuiz" aria-label="問題画面">
+          <div class="quiz-header">
+            <div class="progress" id="progressWrap">
+              <span id="progressText">—</span>
+            </div>
+            <div class="pill" id="modePill">—</div>
+          </div>
+
+          <div class="card" id="card">
+            <div class="meta">
+              <div class="no" id="noText">No.— / 200</div>
+              <div class="dir" id="dirText">—</div>
+            </div>
+
+            <div class="prompt" id="promptText">—</div>
+
+            <div class="answer-wrap hidden" id="answerWrap">
+              <div class="answer-label">ANSWER</div>
+              <div class="answer" id="answerText">—</div>
+            </div>
+
+            <div class="hand-wrap hidden" id="handWrap">
+              <div class="hand-title">HANDWRITE</div>
+              <canvas class="hand-canvas" id="handCanvas" width="800" height="400"></canvas>
+              <div class="hand-controls">
+                <div class="left">
+                  <button class="navbtn" id="clearCanvasBtn" title="消す（C）">消す</button>
+                </div>
+                <div class="right">
+                  <div class="hand-note">ここに英単語を手書き（評価はしません）</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="controls">
+            <div class="left">
+              <button class="cta" id="toggleAnswerBtn">答えを表示</button>
+              <button class="navbtn" id="restartBtn" title="最初から">最初から</button>
+              <button class="navbtn hidden" id="newSetBtn" title="抽選し直す">抽選し直す</button>
+            </div>
+
+            <div class="right">
+              <button class="navbtn" id="prevBtn">前へ</button>
+              <button class="navbtn" id="nextBtn">次へ</button>
+            </div>
+          </div>
+
+          <div class="hint">
+            Space：答え / ←→：移動（順番・逆順・周回は前後、ランダム/本番は次のみ） / C：消す（手書き） / Esc：タイトルへ
+          </div>
+
+          <div class="debug-bar" id="debugBar"></div>
+        </section>
+      </div>
+    </main>
+
+    <div class="overlay hidden" id="settingsOverlay" role="dialog" aria-modal="true" aria-label="設定">
+      <div class="sheet">
+        <div class="sheet-header">
+          <div class="sheet-title">設定</div>
+          <button class="icon-btn" id="closeSettingsBtn" aria-label="閉じる" title="閉じる">✕</button>
+        </div>
+
+        <div class="sheet-body">
+          <div class="setting">
+            <div class="text">
+              <div class="name">出題方向</div>
+              <div class="note">英語を見て日本語 / 日本語を見て英語（手書き本番は日→英固定）</div>
+            </div>
+            <div class="seg" role="tablist" aria-label="出題方向">
+              <button type="button" id="dirEnJaBtn" class="active" role="tab" aria-selected="true">英 → 日</button>
+              <button type="button" id="dirJaEnBtn" role="tab" aria-selected="false">日 → 英</button>
+            </div>
+          </div>
+
+          <div class="setting">
+            <div class="text">
+              <div class="name">アニメーション</div>
+              <div class="note">フェードのみ（0.2〜0.3秒）。学習を邪魔しない程度。</div>
+            </div>
+            <label class="toggle" aria-label="アニメーション ON/OFF">
+              <input type="checkbox" id="animToggle" />
+            </label>
+          </div>
+
+          <div class="setting">
+            <div class="text">
+              <div class="name">データ検証表示</div>
+              <div class="note">欠番/重複/解析エラーがある場合に、画面下に小さく表示します。</div>
+            </div>
+            <label class="toggle" aria-label="データ検証表示 ON/OFF">
+              <input type="checkbox" id="debugToggle" />
+            </label>
+          </div>
+        </div>
+
+        <div class="sheet-footer">
+          <button class="textbtn" id="closeSettingsBtn2">閉じる</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="corner">
+      <div class="version">
+        Version 0.2<br />
+        © 2026 Your Name
+      </div>
+    </div>
+  </div>
+
+  <script>
+    ;(() => {
+      "use strict";
+
+      // =========================
+      // RAW_DATA (confirmed)
+      // =========================
+      const RAW_DATA = `
+1 ability 能力，力量 51 maker 製造元，製作者 101 defeat 負かす，打ち破る 151 eager 強く望んでいる，切望している
+2 ad 広告，宣伝 52 match 試合，競技 102 destroy を破壊する，を壊す 152 engaged に従事して，忙しくして
+3 agenda 議題 53 merchant 商人，販売者 103 disappoint がっかりさせる，失望させる 153 exclusive 閉鎖的な
+4 alternative 代替物，代案 54 mixture 混合物，複合体 104 do me a favor お願いをする 154 expensive 高価な，費用のかかる
+5 ankle 足首，くるぶし 55 nature 自然，天然 105 dump 投げ捨てる，捨てる 155 fat 太った，肥満した
+6 architect 建築家 56 obligation 義務，責任 106 encounter 遭遇する，出会う 156 friendly 友好的な，親切な
+7 assistance 支援，手伝い 57 opportunity 機会，好機 107 escape 逃れる，脱走する 157 harsh 厳しい
+8 automobile 自動車，乗用車 58 pain 痛み，苦痛 108 exist 存在する，実在する 158 immediate 即座の，瞬時の
+9 benefit 利益/に利益をもたらす 59 path 小道，細道 109 extend 延びる，延長する 159 initial 当初の，最初の
+10 breast 胸部，胸 60 period 期間，周期 110 flow 流れる，流す 160 latter 後者の，後半の
+11 candidate 候補者，志願者 61 pit くぼみ，凹み 111 gather を集める，収集する 161 medium 中間の，中央の
+12 chairman 会長 62 politician 政治家，政府要人 112 graduate を卒業する，を修了する 162 naked 裸の，無防備な
+13 circuit 回路，巡回 63 prayer 祈り，礼拝 113 hate ひどく嫌う，深く憎む 163 nuclear 核の，中心の
+14 coal 石炭，炭 64 principle 原理 114 imitate 模倣する，真似る 164 numerous 多数の，多くの
+15 commission 手数料，委任状 65 profit 利益，もうけ 115 inform 情報を与える，に知らせる 165 overwhelming 圧倒的な，支配的な
+16 compassion 思いやり 66 proverb ことわざ 116 interrupt 割り込む，中断する 166 plain 簡素な，わかりやすい
+17 condition 状態，条件，情勢 67 quantity 量，数値 117 keep in mind を心に留めておく 167 precious 貴重な，大切な
+18 constitution 憲法，構成，組織 68 reduction 削減，減少 118 live on 生き続ける，存続する 168 prompt 即座の，直ちに
+19 contribution 寄付，貢献 69 representative 代表者，代理人 119 lose 失う，無くす 169 raw 生の，未加工の
+20 court 裁判所，法廷 70 restriction 制限，限定 120 manufacturing 製造している 170 responsible 責任がある，責任が伴う
+21 criticism 批判，評価 71 rumor うわさ 121 nod うなずく，会釈する 171 secondhand 中古の
+22 deadline 締め切り，期限 72 secretary 秘書，秘書官 122 originate 始まる，起こす 172 smart 頭の良い，きちんとした
+23 delivery 配達，送付 73 sign 標識，印，合図 123 pitch 投げる，放る 173 stupid 馬鹿な，愚かな
+24 destination 目的地，行き先 74 souvenir お土産 124 preserve 保存/を保存する 174 talented 才能のある
+25 dignity 威厳，尊厳 75 stock 株，在庫/を在庫に持つ 125 prove を証明する，立証する 175 tough 頑強な，丈夫な
+26 disorder 無秩序，混乱 76 substance 物質，実態 126 put together まとめる，一緒にする 176 uncomfortable 心地の悪い，不快な
+27 doubt 疑い，疑問 77 supply 供給 127 recognize を認識する，はっきりと知る 177 urgent 緊急の，急を要する
+28 economics 経済学，財政学 78 tale お話，物語 128 release 解き放つ，解放する 178 vital 極めて重要な，生命の
+29 emergency 緊急事態，緊急 79 term 期間，専門用語 129 reply 返答する，応答する 179 adequate 適切で，十分な
+30 environment 環境，状況 80 tissue 細胞組織，薄い織物 130 retire 退職する，引退する 180 aloud 声に出して，大声で
+31 evidence 証拠 81 trait 特性，特色 131 run away 逃げ去る，逃亡する 181 bravely 勇敢に，りっぱに
+32 expectation 期待，予想 82 truth 真実，事実 132 select を選び出す，を選ぶ 182 especially 特に，格段に
+33 extent 程度，大きさ 83 variation 変化，変動 133 slip 滑る 183 forward 前方へ，前に
+34 fame 名声 84 vocabulary 単語，語彙 134 spread を広げる，広がる 184 immediately 即座に，直ちに
+35 fellow 仲間，友人 85 wisdom 知恵，賢明さ 135 strain 張る，伸ばす 185 later 後に，以後
+36 flood 洪水，氾濫 86 abandon を捨て去る，放棄する 136 summon 召喚する 186 nevertheless にも関わらず，けれども
+37 fraction 分数 87 acquaint 知らせる 137 take after をまねる，に似る 187 particularly 特に，とりわけ
+38 gene 遺伝子，遺因 88 affect に影響を与える，に作用する 138 transfer を移す，を転送する 188 rapidly 素早く，迅速に
+39 grace 恵み 89 answer for 責任を負う，引き受ける 139 undertake 引き受ける 189 sincerely 心から，真心こめて
+40 harbor 港，港湾 90 argue だと主張する，感情的に論じる 140 wear 身につけている，着用している 190 terribly ひどく，ものすごく
+41 hemisphere 半球 91 astonish ひどく驚かす，驚かせる 141 wrap を包む，巻きつける 191 as far as I know 私の知る限り
+42 humidity 湿度，湿気 92 beat 打ち負かす 142 wrong 間違い，誤った 192 at one time 一度に，同時に
+43 impact 影響，衝撃 93 bleed 出血する 143 aggressive 攻撃的な，侵略的な 193 be familiar with に馴染みがある
+44 industry 産業，工業 94 break out 勃発する 144 agricultural 農業の，農作物の 194 before long 間もなく
+45 injection 注射，注入 95 capture を捕まえる，捉える 145 artificial 人工的な，人造の 195 for example 例えば，たとえ… としても
+46 insurance 保険，保障 96 civilize 文明化する，開化させる 146 biological 生物学上の，生物的な 196 in advance 前もって，事前に
+47 joint 継目，関節 97 commute 通勤する，取り替える 147 civil 市民の，住民の 197 in practice 実際には, 実際
+48 laboratory 実験室，研究所 98 concern 心配する，に関係する 148 concrete 具体的な，明確な 198 not yet まだ，今のところ
+49 layer 層 99 contain を含む，が入っている 149 creative 創造的な，独創的な 199 on the way to 道の途中で
+50 litter ごみ 100 criticize を批評する，を評価する 150 desirable 望ましい，理想的な 200 to start with まず第一に，初めに
+      `;
+
+      // =========================
+      // Parse (as specified)
+      // =========================
+      const idRegex = /\b(200|1\d\d|[1-9]\d|[1-9])\b/g;
+      const jpRegex = /[ぁ-んァ-ヶ一-龯]/;
+
+      function parseWords(raw){
+        const normalized = String(raw).replace(/\s+/g, " ").trim();
+        const matches = Array.from(normalized.matchAll(idRegex));
+        const found = [];
+        const parseErrors = [];
+
+        for (let i = 0; i < matches.length; i++){
+          const start = matches[i].index ?? -1;
+          const end = (i + 1 < matches.length) ? (matches[i + 1].index ?? normalized.length) : normalized.length;
+          if (start < 0) continue;
+
+          const chunk = normalized.slice(start, end).trim();
+          const m = chunk.match(/^(\d+)\s+(.+)$/);
+          if (!m) continue;
+
+          const id = Number(m[1]);
+          if (!(id >= 1 && id <= 200)) continue;
+
+          const rest = m[2] ?? "";
+          const jpIndex = rest.search(jpRegex);
+
+          let word = "";
+          let meaning = "";
+
+          if (jpIndex === -1){
+            word = rest.trim();
+            meaning = "";
+            parseErrors.push(id);
+          } else {
+            word = rest.slice(0, jpIndex).trim();
+            meaning = rest.slice(jpIndex).trim();
+            if (!word || !meaning) parseErrors.push(id);
+          }
+
+          found.push({ id, word, meaning });
+        }
+
+        found.sort((a,b) => a.id - b.id);
+
+        const byId = new Map();
+        const duplicates = [];
+        for (const item of found){
+          if (byId.has(item.id)){
+            duplicates.push(item.id);
+            continue;
+          }
+          byId.set(item.id, item);
+        }
+
+        const missing = [];
+        for (let id = 1; id <= 200; id++){
+          if (!byId.has(id)) missing.push(id);
+        }
+
+        const parseErrorsUnique = Array.from(new Set(parseErrors)).sort((a,b)=>a-b);
+        const words = Array.from(byId.values()).sort((a,b)=>a.id - b.id);
+
+        return {
+          words,
+          byId,
+          missing,
+          duplicates: Array.from(new Set(duplicates)).sort((a,b)=>a-b),
+          parseErrors: parseErrorsUnique
+        };
+      }
+
+      function shuffle(arr){
+        const a = arr.slice();
+        for (let i = a.length - 1; i > 0; i--){
+          const j = Math.floor(Math.random() * (i + 1));
+          [a[i], a[j]] = [a[j], a[i]];
+        }
+        return a;
+      }
+
+      // =========================
+      // Settings
+      // =========================
+      const SETTINGS_KEY = "wordPractice200.settings.v1";
+      const EXAM_SET_KEY = "wordPractice200.examSet.v1";
+
+      const defaultSettings = {
+        direction: "EN_JA",     // EN_JA or JA_EN
+        animations: true,
+        debug: true
+      };
+
+      function loadSettings(){
+        try{
+          const raw = localStorage.getItem(SETTINGS_KEY);
+          if (!raw) return { ...defaultSettings };
+          const parsed = JSON.parse(raw);
+          return {
+            direction: (parsed.direction === "JA_EN") ? "JA_EN" : "EN_JA",
+            animations: !!parsed.animations,
+            debug: !!parsed.debug
+          };
+        } catch {
+          return { ...defaultSettings };
+        }
+      }
+      function saveSettings(s){
+        localStorage.setItem(SETTINGS_KEY, JSON.stringify(s));
+      }
+
+      // =========================
+      // App state
+      // =========================
+      const data = parseWords(RAW_DATA);
+
+      const state = {
+        settings: loadSettings(),
+        view: "TITLE",  // TITLE | QUIZ
+        mode: null,     // SEQ | REV | RND | LOOP2 | EXAM | HAND
+        order: [],
+        index: 0,
+        showAnswer: false,
+        done: false,
+        lastRenderedKey: ""
+      };
+
+      // =========================
+      // Elements
+      // =========================
+      const el = {
+        backBtn: document.getElementById("backBtn"),
+        settingsBtn: document.getElementById("settingsBtn"),
+
+        viewTitle: document.getElementById("viewTitle"),
+        viewQuiz: document.getElementById("viewQuiz"),
+
+        startSeqBtn: document.getElementById("startSeqBtn"),
+        startRevBtn: document.getElementById("startRevBtn"),
+        startRndBtn: document.getElementById("startRndBtn"),
+        startLoopBtn: document.getElementById("startLoopBtn"),
+        startExamBtn: document.getElementById("startExamBtn"),
+        startHandBtn: document.getElementById("startHandBtn"),
+
+        dataStatusText: document.getElementById("dataStatusText"),
+        progressText: document.getElementById("progressText"),
+        modePill: document.getElementById("modePill"),
+        noText: document.getElementById("noText"),
+        dirText: document.getElementById("dirText"),
+        promptText: document.getElementById("promptText"),
+        answerWrap: document.getElementById("answerWrap"),
+        answerText: document.getElementById("answerText"),
+
+        handWrap: document.getElementById("handWrap"),
+        handCanvas: document.getElementById("handCanvas"),
+        clearCanvasBtn: document.getElementById("clearCanvasBtn"),
+
+        toggleAnswerBtn: document.getElementById("toggleAnswerBtn"),
+        prevBtn: document.getElementById("prevBtn"),
+        nextBtn: document.getElementById("nextBtn"),
+        restartBtn: document.getElementById("restartBtn"),
+        newSetBtn: document.getElementById("newSetBtn"),
+
+        debugBar: document.getElementById("debugBar"),
+        card: document.getElementById("card"),
+
+        settingsOverlay: document.getElementById("settingsOverlay"),
+        closeSettingsBtn: document.getElementById("closeSettingsBtn"),
+        closeSettingsBtn2: document.getElementById("closeSettingsBtn2"),
+
+        dirEnJaBtn: document.getElementById("dirEnJaBtn"),
+        dirJaEnBtn: document.getElementById("dirJaEnBtn"),
+        animToggle: document.getElementById("animToggle"),
+        debugToggle: document.getElementById("debugToggle")
+      };
+
+      // =========================
+      // Debug summary UI
+      // =========================
+      function formatList(ids, max = 14){
+        if (!ids.length) return "なし";
+        const head = ids.slice(0, max).join(", ");
+        const tail = ids.length > max ? ` …(+${ids.length - max})` : "";
+        return head + tail;
+      }
+
+      function updateDataStatus(){
+        const ok = (data.words.length === 200) && data.missing.length === 0 && data.duplicates.length === 0 && data.parseErrors.length === 0;
+        const parts = [];
+        parts.push(ok ? `OK（200/200）` : `注意（${data.words.length}/200）`);
+        if (data.missing.length) parts.push(`欠番: ${formatList(data.missing)}`);
+        if (data.duplicates.length) parts.push(`重複: ${formatList(data.duplicates)}`);
+        if (data.parseErrors.length) parts.push(`解析: ${formatList(data.parseErrors)}`);
+        el.dataStatusText.textContent = parts.join(" / ");
+      }
+
+      function updateDebugBar(){
+        if (!state.settings.debug){
+          el.debugBar.textContent = "";
+          return;
+        }
+        const lines = [];
+        if (data.missing.length) lines.push(`欠番: ${formatList(data.missing)}`);
+        if (data.duplicates.length) lines.push(`重複: ${formatList(data.duplicates)}`);
+        if (data.parseErrors.length) lines.push(`解析エラー: ${formatList(data.parseErrors)}`);
+
+        if (!lines.length){
+          el.debugBar.textContent = "";
+          return;
+        }
+        el.debugBar.innerHTML = `<strong>Data check</strong> — ${lines.join(" / ")}`;
+      }
+
+      // =========================
+      // View + render
+      // =========================
+      function setView(next){
+        state.view = next;
+        const isTitle = (next === "TITLE");
+        el.viewTitle.classList.toggle("active", isTitle);
+        el.viewQuiz.classList.toggle("active", !isTitle);
+        el.backBtn.disabled = isTitle;
+      }
+
+      function getCurrent(){
+        if (!state.order.length) return null;
+        return state.order[state.index] || null;
+      }
+
+      function dirLabel(){
+        if (state.mode === "HAND") return "手書き：日 → 英（固定）";
+        return state.settings.direction === "EN_JA" ? "英 → 日" : "日 → 英";
+      }
+
+      function modeLabel(){
+        switch (state.mode){
+          case "SEQ": return "順番モード";
+          case "REV": return "逆順モード";
+          case "RND": return "ランダム（1周）";
+          case "LOOP2": return "ランダム周回（2周）";
+          case "EXAM": return "本番モード（100問）";
+          case "HAND": return "手書き本番（100問）";
+          default: return "—";
+        }
+      }
+
+      function totalInMode(){
+        return state.order.length || 0;
+      }
+
+      function displayPromptAnswer(wordObj){
+        // Handwriting mode is fixed: JP -> EN
+        if (state.mode === "HAND"){
+          return { prompt: wordObj.meaning, answer: wordObj.word };
+        }
+        const isEnJa = state.settings.direction === "EN_JA";
+        return { prompt: isEnJa ? wordObj.word : wordObj.meaning, answer: isEnJa ? wordObj.meaning : wordObj.word };
+      }
+
+      function animateCardSwap(fnRender){
+        if (!state.settings.animations){
+          fnRender();
+          return;
+        }
+        el.card.classList.add("fade-out");
+        window.setTimeout(() => {
+          fnRender();
+          el.card.classList.remove("fade-out");
+        }, 140);
+      }
+
+      // =========================
+      // Canvas handwriting
+      // =========================
+      let canvasCtx = null;
+      let drawing = false;
+
+      function ensureCanvasReady(){
+        if (!el.handCanvas) return;
+        if (!canvasCtx){
+          canvasCtx = el.handCanvas.getContext("2d", { alpha: false });
+        }
+        resizeCanvasToCSS();
+        primeCanvasStyle();
+      }
+
+      function primeCanvasStyle(){
+        if (!canvasCtx) return;
+        canvasCtx.lineCap = "round";
+        canvasCtx.lineJoin = "round";
+        canvasCtx.strokeStyle = "#111214";
+        canvasCtx.lineWidth = 3.2;
+      }
+
+      function resizeCanvasToCSS(){
+        if (!el.handCanvas || !canvasCtx) return;
+        const rect = el.handCanvas.getBoundingClientRect();
+        const dpr = window.devicePixelRatio || 1;
+
+        // Set backing store to match CSS size * dpr
+        const w = Math.max(1, Math.round(rect.width * dpr));
+        const h = Math.max(1, Math.round(rect.height * dpr));
+
+        if (el.handCanvas.width !== w || el.handCanvas.height !== h){
+          el.handCanvas.width = w;
+          el.handCanvas.height = h;
+          canvasCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+          clearCanvas();
+          primeCanvasStyle();
+        }
+      }
+
+      function clearCanvas(){
+        if (!canvasCtx || !el.handCanvas) return;
+        const rect = el.handCanvas.getBoundingClientRect();
+        canvasCtx.save();
+        canvasCtx.setTransform(1,0,0,1,0,0);
+        canvasCtx.fillStyle = "#ffffff";
+        canvasCtx.fillRect(0,0, el.handCanvas.width, el.handCanvas.height);
+        canvasCtx.restore();
+        primeCanvasStyle();
+      }
+
+      function canvasPointFromEvent(e){
+        const r = el.handCanvas.getBoundingClientRect();
+        return { x: e.clientX - r.left, y: e.clientY - r.top };
+      }
+
+      function bindCanvasEvents(){
+        if (!el.handCanvas) return;
+
+        el.handCanvas.addEventListener("pointerdown", (e) => {
+          if (state.mode !== "HAND") return;
+          ensureCanvasReady();
+          drawing = true;
+          el.handCanvas.setPointerCapture(e.pointerId);
+          const p = canvasPointFromEvent(e);
+          canvasCtx.beginPath();
+          canvasCtx.moveTo(p.x, p.y);
+        });
+
+        el.handCanvas.addEventListener("pointermove", (e) => {
+          if (state.mode !== "HAND") return;
+          if (!drawing) return;
+          const p = canvasPointFromEvent(e);
+          canvasCtx.lineTo(p.x, p.y);
+          canvasCtx.stroke();
+        });
+
+        const end = () => { drawing = false; };
+        el.handCanvas.addEventListener("pointerup", end);
+        el.handCanvas.addEventListener("pointercancel", end);
+        el.handCanvas.addEventListener("pointerleave", end);
+
+        window.addEventListener("resize", () => {
+          if (state.mode === "HAND"){
+            ensureCanvasReady();
+          }
+        });
+      }
+
+      // =========================
+      // Exam set (shared between EXAM and HAND)
+      // =========================
+      function loadExamSetIds(){
+        try{
+          const raw = localStorage.getItem(EXAM_SET_KEY);
+          if (!raw) return null;
+          const obj = JSON.parse(raw);
+          if (!obj || !Array.isArray(obj.ids)) return null;
+          const ids = obj.ids.map(Number).filter(n => Number.isFinite(n));
+          return ids.length ? ids : null;
+        } catch {
+          return null;
+        }
+      }
+
+      function saveExamSetIds(ids){
+        const payload = { ids: ids.slice(), createdAt: Date.now() };
+        localStorage.setItem(EXAM_SET_KEY, JSON.stringify(payload));
+      }
+
+      function createExamSetIds(){
+        const baseIds = data.words.map(w => w.id);
+        const n = Math.min(100, baseIds.length);
+        const ids = shuffle(baseIds).slice(0, n);
+        saveExamSetIds(ids);
+        return ids;
+      }
+
+      function ensureExamSetIds(forceNew = false){
+        if (forceNew) return createExamSetIds();
+        const existing = loadExamSetIds();
+        if (existing && existing.length) return existing;
+        return createExamSetIds();
+      }
+
+      // =========================
+      // Build order for each mode
+      // =========================
+      function buildOrder(mode){
+        const base = data.words.slice();
+
+        if (mode === "SEQ") return base;
+        if (mode === "REV") return base.slice().reverse();
+        if (mode === "RND") return shuffle(base);
+
+        if (mode === "LOOP2"){
+          const loops = 2;
+          const out = [];
+          for (let i = 0; i < loops; i++){
+            out.push(...shuffle(base));
+          }
+          return out;
+        }
+
+        if (mode === "EXAM" || mode === "HAND"){
+          const ids = ensureExamSetIds(false);
+          const out = [];
+          for (const id of ids){
+            const w = data.byId.get(id);
+            if (w) out.push(w);
+          }
+          return out;
+        }
+
+        return base;
+      }
+
+      // =========================
+      // Render
+      // =========================
+      function renderQuestion(){
+        const cur = getCurrent();
+        if (!cur){
+          el.noText.textContent = "No.— / 200";
+          el.promptText.textContent = "データがありません";
+          el.answerText.textContent = "";
+          el.answerWrap.classList.add("hidden");
+          el.handWrap.classList.add("hidden");
+          return;
+        }
+
+        const qIndex = state.index + 1;
+        const total = totalInMode();
+
+        el.progressText.innerHTML = `<strong>${qIndex}</strong> / ${total}`;
+        el.modePill.textContent = modeLabel();
+        el.noText.textContent = `No.${cur.id} / 200`;
+        el.dirText.textContent = dirLabel();
+
+        const { prompt, answer } = displayPromptAnswer(cur);
+        el.promptText.textContent = prompt;
+
+        // answer visibility
+        if (state.showAnswer){
+          el.answerWrap.classList.remove("hidden");
+          el.answerText.textContent = answer;
+          el.toggleAnswerBtn.textContent = "答えを隠す";
+        } else {
+          el.answerWrap.classList.add("hidden");
+          el.answerText.textContent = answer; // keep
+          el.toggleAnswerBtn.textContent = "答えを表示";
+        }
+
+        // prev behavior: allowed only for SEQ / REV / LOOP2
+        const allowPrev = (state.mode === "SEQ" || state.mode === "REV" || state.mode === "LOOP2");
+        el.prevBtn.classList.toggle("hidden", !allowPrev);
+        el.prevBtn.disabled = !allowPrev || state.index === 0;
+
+        // "抽選し直す" visible only for EXAM/HAND
+        const isExamFamily = (state.mode === "EXAM" || state.mode === "HAND");
+        el.newSetBtn.classList.toggle("hidden", !isExamFamily);
+
+        // handwriting UI
+        el.handWrap.classList.toggle("hidden", state.mode !== "HAND");
+        if (state.mode === "HAND"){
+          ensureCanvasReady();
+          const key = `${state.mode}:${state.index}`;
+          if (state.lastRenderedKey !== key){
+            clearCanvas();
+          }
+          state.lastRenderedKey = key;
+        }
+
+        // next button
+        el.nextBtn.textContent = state.done ? "終了" : (state.index >= state.order.length - 1 ? "完了" : "次へ");
+        el.nextBtn.disabled = false;
+      }
+
+      function renderAll(){
+        updateDataStatus();
+        updateDebugBar();
+
+        // settings reflect
+        const isEnJa = state.settings.direction === "EN_JA";
+        el.dirEnJaBtn.classList.toggle("active", isEnJa);
+        el.dirEnJaBtn.setAttribute("aria-selected", String(isEnJa));
+        el.dirJaEnBtn.classList.toggle("active", !isEnJa);
+        el.dirJaEnBtn.setAttribute("aria-selected", String(!isEnJa));
+
+        el.animToggle.checked = state.settings.animations;
+        el.debugToggle.checked = state.settings.debug;
+
+        // direction buttons should still be clickable, but handwriting is fixed; we keep UI as-is.
+        if (state.view === "QUIZ"){
+          renderQuestion();
+        }
+      }
+
+      // =========================
+      // Navigation / Mode
+      // =========================
+      function startMode(mode){
+        state.mode = mode;
+        state.index = 0;
+        state.showAnswer = false;
+        state.done = false;
+        state.lastRenderedKey = "";
+
+        state.order = buildOrder(mode);
+
+        setView("QUIZ");
+        animateCardSwap(renderAll);
+      }
+
+      function goTitle(){
+        state.mode = null;
+        state.order = [];
+        state.index = 0;
+        state.showAnswer = false;
+        state.done = false;
+        state.lastRenderedKey = "";
+        setView("TITLE");
+        renderAll();
+      }
+
+      function next(){
+        if (state.view !== "QUIZ") return;
+
+        if (state.done){
+          goTitle();
+          return;
+        }
+
+        if (state.index >= state.order.length - 1){
+          state.done = true;
+          state.showAnswer = true;
+          animateCardSwap(renderAll);
+          return;
+        }
+
+        state.index += 1;
+        state.showAnswer = false;
+        animateCardSwap(renderAll);
+      }
+
+      function prev(){
+        if (state.view !== "QUIZ") return;
+        const allowPrev = (state.mode === "SEQ" || state.mode === "REV" || state.mode === "LOOP2");
+        if (!allowPrev) return;
+        if (state.index <= 0) return;
+
+        state.index -= 1;
+        state.showAnswer = false;
+        animateCardSwap(renderAll);
+      }
+
+      function toggleAnswer(){
+        if (state.view !== "QUIZ") return;
+        state.showAnswer = !state.showAnswer;
+        animateCardSwap(renderAll);
+      }
+
+      function restart(){
+        if (state.view !== "QUIZ") return;
+
+        state.index = 0;
+        state.done = false;
+        state.showAnswer = false;
+        state.lastRenderedKey = "";
+
+        // rebuild deck for some modes
+        if (state.mode === "RND"){
+          state.order = buildOrder("RND");
+        } else if (state.mode === "LOOP2"){
+          state.order = buildOrder("LOOP2");
+        } else if (state.mode === "EXAM" || state.mode === "HAND"){
+          // keep same set (shared)
+          state.order = buildOrder(state.mode);
+        } else if (state.mode === "SEQ" || state.mode === "REV"){
+          state.order = buildOrder(state.mode);
+        }
+
+        animateCardSwap(renderAll);
+      }
+
+      function newExamSet(){
+        if (!(state.mode === "EXAM" || state.mode === "HAND")) return;
+        ensureExamSetIds(true); // force new
+        restart(); // rebuild + start from 0
+      }
+
+      // =========================
+      // Settings overlay
+      // =========================
+      function openSettings(){ el.settingsOverlay.classList.remove("hidden"); }
+      function closeSettings(){ el.settingsOverlay.classList.add("hidden"); }
+
+      function setDirection(dir){
+        state.settings.direction = (dir === "JA_EN") ? "JA_EN" : "EN_JA";
+        saveSettings(state.settings);
+        renderAll();
+      }
+      function setAnimations(on){
+        state.settings.animations = !!on;
+        saveSettings(state.settings);
+        renderAll();
+      }
+      function setDebug(on){
+        state.settings.debug = !!on;
+        saveSettings(state.settings);
+        renderAll();
+      }
+
+      // =========================
+      // Events
+      // =========================
+      el.startSeqBtn.addEventListener("click", () => startMode("SEQ"));
+      el.startRevBtn.addEventListener("click", () => startMode("REV"));
+      el.startRndBtn.addEventListener("click", () => startMode("RND"));
+      el.startLoopBtn.addEventListener("click", () => startMode("LOOP2"));
+      el.startExamBtn.addEventListener("click", () => startMode("EXAM"));
+      el.startHandBtn.addEventListener("click", () => startMode("HAND"));
+
+      el.backBtn.addEventListener("click", goTitle);
+      el.toggleAnswerBtn.addEventListener("click", toggleAnswer);
+      el.nextBtn.addEventListener("click", next);
+      el.prevBtn.addEventListener("click", prev);
+      el.restartBtn.addEventListener("click", restart);
+      el.newSetBtn.addEventListener("click", newExamSet);
+
+      el.clearCanvasBtn.addEventListener("click", () => {
+        if (state.mode === "HAND"){
+          ensureCanvasReady();
+          clearCanvas();
+        }
+      });
+
+      el.settingsBtn.addEventListener("click", openSettings);
+      el.closeSettingsBtn.addEventListener("click", closeSettings);
+      el.closeSettingsBtn2.addEventListener("click", closeSettings);
+      el.settingsOverlay.addEventListener("click", (e) => {
+        if (e.target === el.settingsOverlay) closeSettings();
+      });
+
+      el.dirEnJaBtn.addEventListener("click", () => setDirection("EN_JA"));
+      el.dirJaEnBtn.addEventListener("click", () => setDirection("JA_EN"));
+      el.animToggle.addEventListener("change", (e) => setAnimations(e.target.checked));
+      el.debugToggle.addEventListener("change", (e) => setDebug(e.target.checked));
+
+      document.addEventListener("keydown", (e) => {
+        if (el.settingsOverlay && !el.settingsOverlay.classList.contains("hidden")){
+          if (e.key === "Escape"){
+            e.preventDefault();
+            closeSettings();
+          }
+          return;
+        }
+
+        if (e.key === "Escape"){
+          if (state.view === "QUIZ"){
+            e.preventDefault();
+            goTitle();
+          }
+          return;
+        }
+
+        if (state.view !== "QUIZ") return;
+
+        if (e.key === " "){
+          e.preventDefault();
+          toggleAnswer();
+          return;
+        }
+        if (e.key === "ArrowRight"){
+          e.preventDefault();
+          next();
+          return;
+        }
+        if (e.key === "ArrowLeft"){
+          e.preventDefault();
+          const allowPrev = (state.mode === "SEQ" || state.mode === "REV" || state.mode === "LOOP2");
+          if (allowPrev) prev();
+          else next();
+          return;
+        }
+        if (e.key.toLowerCase() === "c"){
+          if (state.mode === "HAND"){
+            e.preventDefault();
+            ensureCanvasReady();
+            clearCanvas();
+          }
+        }
+      });
+
+      // canvas init
+      bindCanvasEvents();
+
+      // Boot
+      setView("TITLE");
+      renderAll();
+    })();
+  </script>
+</body>
+</html>
