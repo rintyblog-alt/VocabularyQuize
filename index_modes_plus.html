@@ -337,12 +337,8 @@
     .mark-layer.ng .x1{ animation: drawLine .40s ease forwards; }
     .mark-layer.ng .x2{ animation: drawLine .40s .10s ease forwards; }
 
-    @keyframes drawRing{
-      to{ stroke-dashoffset: 0; }
-    }
-    @keyframes drawLine{
-      to{ stroke-dashoffset: 0; }
-    }
+    @keyframes drawRing{ to{ stroke-dashoffset: 0; } }
+    @keyframes drawLine{ to{ stroke-dashoffset: 0; } }
 
     .meta{
       display:flex;
@@ -932,10 +928,10 @@
               <canvas class="hand-canvas" id="handCanvas" width="800" height="400"></canvas>
               <div class="hand-controls">
                 <div class="left">
-                  <button class="navbtn" id="clearCanvasBtn" title="消す（C）">消す</button>
+                  <button class="navbtn" id="clearCanvasBtn" title="消す">消す</button>
                 </div>
                 <div class="right">
-                  <div class="hand-note">判定は「判定」ボタンで実行（必要なら自動で読み取り）。</div>
+                  <div class="hand-note">判定は「判定」ボタン or Enter のみ。</div>
                 </div>
               </div>
             </div>
@@ -955,7 +951,7 @@
           </div>
 
           <div class="hint">
-            Space：表示/判定 / Enter：判定（手書き）/ ←→：移動 / C：消す（手書き） / Esc：タイトルへ
+            Enter：判定（手書き） / ←→：移動 / Esc：タイトルへ
           </div>
 
           <div class="debug-bar" id="debugBar"></div>
@@ -1033,6 +1029,26 @@
 
           <div class="setting">
             <div class="text">
+              <div class="name">効果音</div>
+              <div class="note">正解/不正解の音。ループしません。</div>
+            </div>
+            <label class="toggle" aria-label="効果音 ON/OFF">
+              <input type="checkbox" id="sfxToggle" />
+            </label>
+          </div>
+
+          <div class="setting">
+            <div class="text">
+              <div class="name">BGM</div>
+              <div class="note">問題画面でループ再生。</div>
+            </div>
+            <label class="toggle" aria-label="BGM ON/OFF">
+              <input type="checkbox" id="bgmToggle" />
+            </label>
+          </div>
+
+          <div class="setting">
+            <div class="text">
               <div class="name">データ検証表示</div>
               <div class="note">欠番/重複/解析エラーがある場合に小さく表示。</div>
             </div>
@@ -1050,7 +1066,7 @@
 
     <div class="corner">
       <div class="version">
-        Version 0.4<br />
+        Version 0.5<br />
         © 2026 Your Name
       </div>
     </div>
@@ -1059,6 +1075,76 @@
   <script>
     ;(() => {
       "use strict";
+
+      // =========================
+      // Audio (user-provided mp3)
+      // =========================
+      // Change these paths if you want different filenames/locations.
+      const AUDIO_PATHS = {
+        bgm: "videoplayback-_7_.mp3",
+        correct: "Quiz-Ding_Dong02-2(Fast-Single).mp3",
+        wrong: "Quiz-Buzzer02-4(Multi).mp3",
+      };
+
+      const audio = {
+        ready: false,
+        bgm: null,
+        sfxOk: null,
+        sfxNg: null,
+      };
+
+      function initAudio(){
+        if (audio.ready) return;
+        audio.ready = true;
+
+        audio.bgm = new Audio(AUDIO_PATHS.bgm);
+        audio.bgm.loop = true;           // BGM must loop
+        audio.bgm.preload = "auto";
+
+        audio.sfxOk = new Audio(AUDIO_PATHS.correct);
+        audio.sfxOk.loop = false;        // SFX must NOT loop
+        audio.sfxOk.preload = "auto";
+
+        audio.sfxNg = new Audio(AUDIO_PATHS.wrong);
+        audio.sfxNg.loop = false;        // SFX must NOT loop
+        audio.sfxNg.preload = "auto";
+      }
+
+      function playBgm(){
+        if (!state.settings.bgm) return;
+        initAudio();
+        if (!audio.bgm) return;
+        if (!audio.bgm.paused) return;
+
+        const p = audio.bgm.play();
+        if (p && p.catch) p.catch(() => {});
+      }
+
+      function stopBgm(){
+        if (!audio.ready || !audio.bgm) return;
+        audio.bgm.pause();
+      }
+
+      function syncBgmToView(){
+        if (!state.settings.bgm) { stopBgm(); return; }
+        if (state.view === "QUIZ") playBgm();
+        else stopBgm();
+      }
+
+      function playSfx(kind){
+        if (!state.settings.sfx) return;
+        initAudio();
+        const a = (kind === "ok") ? audio.sfxOk : audio.sfxNg;
+        if (!a) return;
+
+        try{
+          a.pause();
+          a.currentTime = 0;
+        } catch {}
+
+        const p = a.play();
+        if (p && p.catch) p.catch(() => {});
+      }
 
       // =========================
       // RAW_DATA (confirmed)
@@ -1283,14 +1369,16 @@
       // =========================
       // Settings
       // =========================
-      const SETTINGS_KEY = "wordPractice400.settings.v1";
+      const SETTINGS_KEY = "wordPractice400.settings.v2";
       const DECK_KEY = "wordPractice400.deck.v1";
       const EXAM_SET_KEY_PREFIX = "wordPractice400.examSet.v1"; // + ":" + deckKey
 
       const defaultSettings = {
         direction: "EN_JA",     // EN_JA or JA_EN
         animations: true,
-        debug: true
+        debug: true,
+        sfx: true,
+        bgm: true
       };
 
       function loadSettings(){
@@ -1300,8 +1388,10 @@
           const parsed = JSON.parse(raw);
           return {
             direction: (parsed.direction === "JA_EN") ? "JA_EN" : "EN_JA",
-            animations: !!parsed.animations,
-            debug: !!parsed.debug
+            animations: ("animations" in parsed) ? !!parsed.animations : defaultSettings.animations,
+            debug: ("debug" in parsed) ? !!parsed.debug : defaultSettings.debug,
+            sfx: ("sfx" in parsed) ? !!parsed.sfx : defaultSettings.sfx,
+            bgm: ("bgm" in parsed) ? !!parsed.bgm : defaultSettings.bgm
           };
         } catch {
           return { ...defaultSettings };
@@ -1422,6 +1512,8 @@
         dirEnJaBtn: document.getElementById("dirEnJaBtn"),
         dirJaEnBtn: document.getElementById("dirJaEnBtn"),
         animToggle: document.getElementById("animToggle"),
+        sfxToggle: document.getElementById("sfxToggle"),
+        bgmToggle: document.getElementById("bgmToggle"),
         debugToggle: document.getElementById("debugToggle"),
 
         // result
@@ -1525,6 +1617,9 @@
         el.viewResult.classList.toggle("active", next === "RESULT");
 
         el.backBtn.disabled = (next === "TITLE");
+
+        // keep BGM synced to view (quiz only)
+        syncBgmToView();
       }
 
       function animateCardSwap(fnRender){
@@ -1547,9 +1642,7 @@
       // =========================
       // Build order
       // =========================
-      function getExamSetKey(deckKey){
-        return `${EXAM_SET_KEY_PREFIX}:${deckKey}`;
-      }
+      const EXAM_SET_KEY = () => `${EXAM_SET_KEY_PREFIX}:${state.deck}`;
 
       function sampleIdsUnique(ids, n){
         return shuffle(ids).slice(0, Math.min(n, ids.length));
@@ -1557,7 +1650,7 @@
 
       function loadExamSetIds(deckKey){
         try{
-          const raw = localStorage.getItem(getExamSetKey(deckKey));
+          const raw = localStorage.getItem(`${EXAM_SET_KEY_PREFIX}:${deckKey}`);
           if (!raw) return null;
           const obj = JSON.parse(raw);
           if (!obj || !Array.isArray(obj.ids)) return null;
@@ -1570,7 +1663,7 @@
 
       function saveExamSetIds(deckKey, ids){
         const payload = { ids: ids.slice(), createdAt: Date.now() };
-        localStorage.setItem(getExamSetKey(deckKey), JSON.stringify(payload));
+        localStorage.setItem(`${EXAM_SET_KEY_PREFIX}:${deckKey}`, JSON.stringify(payload));
       }
 
       function createExamSetIds(deckKey, forceNew = false){
@@ -1626,7 +1719,6 @@
         if (state.mode === "HAND"){
           return { prompt: wordObj.meaning, answer: wordObj.word };
         }
-
         const isEnJa = state.settings.direction === "EN_JA";
         return { prompt: isEnJa ? wordObj.word : wordObj.meaning, answer: isEnJa ? wordObj.meaning : wordObj.word };
       }
@@ -1822,7 +1914,6 @@
         const w = srcCanvas.width;
         const h = srcCanvas.height;
 
-        // get pixel data
         const tmp = document.createElement("canvas");
         tmp.width = w;
         tmp.height = h;
@@ -1832,13 +1923,11 @@
         const img = tctx.getImageData(0, 0, w, h);
         const d = img.data;
 
-        // find dark pixels bounding box
         let minX = w, minY = h, maxX = 0, maxY = 0;
         let found = false;
 
-        // stride (for speed)
         const step = 2;
-        const thr = 235; // luminance threshold
+        const thr = 235;
         for (let y = 0; y < h; y += step){
           for (let x = 0; x < w; x += step){
             const i = (y * w + x) * 4;
@@ -1858,7 +1947,6 @@
           return srcCanvas;
         }
 
-        // pad and clamp
         const pad = Math.round(Math.min(w, h) * 0.05) + 14;
         const sx = clamp(minX - pad, 0, w - 1);
         const sy = clamp(minY - pad, 0, h - 1);
@@ -1867,7 +1955,6 @@
         const sw = Math.max(1, ex - sx);
         const sh = Math.max(1, ey - sy);
 
-        // scale up modestly
         const scale = 2.0;
         const out = document.createElement("canvas");
         out.width = Math.max(1, Math.round(sw * scale));
@@ -1879,10 +1966,8 @@
         octx.imageSmoothingEnabled = true;
         octx.drawImage(srcCanvas, sx, sy, sw, sh, 0, 0, out.width, out.height);
 
-        // binarize for better detection
         const oimg = octx.getImageData(0,0,out.width,out.height);
         const od = oimg.data;
-        // compute a soft threshold based on average (fast)
         let sum = 0;
         const count = out.width * out.height;
         for (let i = 0; i < od.length; i += 4){
@@ -1921,24 +2006,18 @@
         if (!cleaned) return null;
 
         const candidates = new Set();
-
-        // full
         candidates.add(cleaned);
 
-        // join all tokens (sometimes better for phrases)
         const tokens = cleaned.split(" ").filter(Boolean);
         if (tokens.length) {
           candidates.add(tokens.join(" "));
           candidates.add(tokens.join(""));
         }
-
-        // also try first/last token
         if (tokens.length >= 1){
           candidates.add(tokens[0]);
           candidates.add(tokens[tokens.length - 1]);
         }
 
-        // choose by edit distance to expected
         let best = null;
         let bestDist = Infinity;
         for (const c of candidates){
@@ -1948,8 +2027,6 @@
             best = c;
           }
         }
-
-        // heuristic: if way too far, return cleaned anyway (user can fix)
         return best || cleaned;
       }
 
@@ -1973,7 +2050,6 @@
       }
 
       function showMark(isCorrect){
-        // reset
         el.markLayer.classList.remove("ok","ng");
         el.markLayer.classList.remove("show");
         el.markLayer.classList.remove("hidden");
@@ -1981,13 +2057,11 @@
         el.svgOk.classList.toggle("hidden", !isCorrect);
         el.svgNg.classList.toggle("hidden", isCorrect);
 
-        // restart animation (force reflow)
         void el.markLayer.offsetWidth;
 
         el.markLayer.classList.add(isCorrect ? "ok" : "ng");
         el.markLayer.classList.add("show");
 
-        // auto hide after a moment (badge stays)
         window.setTimeout(() => {
           el.markLayer.classList.remove("show");
           window.setTimeout(() => {
@@ -2016,9 +2090,11 @@
           given = (el.spellInput.value || "").trim();
         }
 
-        // Evaluate
         const expected = cur.word;
         const correct = computeCorrect(expected, given);
+
+        // sound (SFX only, never loop)
+        playSfx(correct ? "ok" : "ng");
 
         state.hand.checked = true;
         state.hand.correct = correct;
@@ -2042,7 +2118,6 @@
         el.judgeBadge.classList.toggle("ng", !correct);
         el.judgeBadge.textContent = correct ? "Correct" : "Wrong";
 
-        // show maru/batsu
         showMark(correct);
 
         el.answerWrap.classList.remove("hidden");
@@ -2127,16 +2202,13 @@
         const { prompt, answer } = displayPromptAnswer(cur);
         el.promptText.textContent = prompt;
 
-        // Prev behavior: allowed only for SEQ/REV/LOOP2/REVIEW_WRONG
         const allowPrev = (state.mode === "SEQ" || state.mode === "REV" || state.mode === "LOOP2" || state.mode === "REVIEW_WRONG");
         el.prevBtn.classList.toggle("hidden", !allowPrev);
         el.prevBtn.disabled = !allowPrev || state.index === 0;
 
-        // "抽選し直す" visible only for EXAM/HAND
         const isExamFamily = (state.mode === "EXAM" || state.mode === "HAND");
         el.newSetBtn.classList.toggle("hidden", !isExamFamily);
 
-        // Hand UI
         const isHand = (state.mode === "HAND");
         el.spellWrap.classList.toggle("hidden", !isHand);
         el.handWrap.classList.toggle("hidden", !isHand);
@@ -2148,7 +2220,6 @@
           el.primaryBtn.textContent = state.hand.checked ? "判定済み" : (state.hand.busy ? "読み取り中…" : "判定");
           el.primaryBtn.disabled = state.hand.checked || state.hand.busy;
 
-          // answer shows only after check
           if (!state.hand.checked){
             el.answerWrap.classList.add("hidden");
             el.answerText.textContent = answer;
@@ -2159,7 +2230,6 @@
             el.answerText.textContent = answer;
           }
 
-          // judge badge reflects state
           if (!state.hand.checked){
             el.judgeBadge.classList.add("hidden");
             el.judgeBadge.classList.remove("ok","ng");
@@ -2167,7 +2237,6 @@
           }
 
         } else {
-          // Non-hand modes: simple show/hide answer
           el.readCanvasBtn.classList.add("hidden");
           hideMark();
 
@@ -2189,7 +2258,6 @@
           el.judgeBadge.textContent = "—";
         }
 
-        // Next button text
         if (state.mode === "HAND"){
           el.nextBtn.textContent = (state.index >= state.order.length - 1) ? "結果へ" : "次へ";
         } else if (state.done){
@@ -2238,7 +2306,6 @@
         updateDataStatus();
         updateDebugBar();
 
-        // settings reflect
         const isEnJa = state.settings.direction === "EN_JA";
         el.dirEnJaBtn.classList.toggle("active", isEnJa);
         el.dirEnJaBtn.setAttribute("aria-selected", String(isEnJa));
@@ -2246,6 +2313,8 @@
         el.dirJaEnBtn.setAttribute("aria-selected", String(!isEnJa));
 
         el.animToggle.checked = state.settings.animations;
+        el.sfxToggle.checked = state.settings.sfx;
+        el.bgmToggle.checked = state.settings.bgm;
         el.debugToggle.checked = state.settings.debug;
 
         if (state.view === "TITLE"){
@@ -2275,14 +2344,14 @@
           state.hand.scoreCorrect = 0;
         }
 
-        if (mode === "REVIEW_WRONG"){
-          state.order = buildOrder("REVIEW_WRONG");
-        } else {
-          state.order = buildOrder(mode);
-        }
+        state.order = buildOrder(mode);
 
         setView("QUIZ");
         if (mode === "HAND") resetHandPerQuestion();
+
+        // start BGM via user gesture (this call is inside click handler)
+        syncBgmToView();
+
         animateCardSwap(renderAll);
       }
 
@@ -2305,13 +2374,8 @@
         if (state.view !== "QUIZ") return;
 
         if (state.mode === "HAND"){
-          // auto-check if needed
-          if (!state.hand.checked){
-            checkHand().then(() => {
-              // if last -> result, allow second tap or keyboard to move
-            });
-            return;
-          }
+          // IMPORTANT: NO auto-judge here.
+          if (!state.hand.checked) return;
 
           if (state.index >= state.order.length - 1){
             goResult();
@@ -2350,10 +2414,6 @@
 
         state.index -= 1;
         state.showAnswer = false;
-
-        if (state.mode === "HAND"){
-          resetHandPerQuestion();
-        }
 
         animateCardSwap(renderAll);
       }
@@ -2429,6 +2489,17 @@
         saveSettings(state.settings);
         renderAll();
       }
+      function setSfx(on){
+        state.settings.sfx = !!on;
+        saveSettings(state.settings);
+        renderAll();
+      }
+      function setBgm(on){
+        state.settings.bgm = !!on;
+        saveSettings(state.settings);
+        syncBgmToView(); // start/stop immediately
+        renderAll();
+      }
       function setDebug(on){
         state.settings.debug = !!on;
         saveSettings(state.settings);
@@ -2469,12 +2540,10 @@
       // =========================
       // Events
       // =========================
-      // deck select
       el.deckABtn.addEventListener("click", () => setDeck("A"));
       el.deckBBtn.addEventListener("click", () => setDeck("B"));
       el.deckAllBtn.addEventListener("click", () => setDeck("ALL"));
 
-      // start modes
       el.startSeqBtn.addEventListener("click", () => startMode("SEQ"));
       el.startRevBtn.addEventListener("click", () => startMode("REV"));
       el.startRndBtn.addEventListener("click", () => startMode("RND"));
@@ -2482,7 +2551,6 @@
       el.startExamBtn.addEventListener("click", () => startMode("EXAM"));
       el.startHandBtn.addEventListener("click", () => startMode("HAND"));
 
-      // nav
       el.backBtn.addEventListener("click", goTitle);
       el.primaryBtn.addEventListener("click", primaryAction);
       el.nextBtn.addEventListener("click", next);
@@ -2490,7 +2558,6 @@
       el.restartBtn.addEventListener("click", restart);
       el.newSetBtn.addEventListener("click", newExamSet);
 
-      // hand buttons
       el.clearCanvasBtn.addEventListener("click", () => {
         if (state.mode === "HAND"){
           ensureCanvasReady();
@@ -2505,13 +2572,6 @@
         await readCanvasIntoInput(cur.word);
       });
 
-      // focus input convenience
-      el.spellInput.addEventListener("focus", () => {
-        // hide lingering mark when editing
-        hideMark();
-      });
-
-      // settings
       el.settingsBtn.addEventListener("click", openSettings);
       el.closeSettingsBtn.addEventListener("click", closeSettings);
       el.closeSettingsBtn2.addEventListener("click", closeSettings);
@@ -2522,9 +2582,10 @@
       el.dirEnJaBtn.addEventListener("click", () => setDirection("EN_JA"));
       el.dirJaEnBtn.addEventListener("click", () => setDirection("JA_EN"));
       el.animToggle.addEventListener("change", (e) => setAnimations(e.target.checked));
+      el.sfxToggle.addEventListener("change", (e) => setSfx(e.target.checked));
+      el.bgmToggle.addEventListener("change", (e) => setBgm(e.target.checked));
       el.debugToggle.addEventListener("change", (e) => setDebug(e.target.checked));
 
-      // result
       el.resultRestartBtn.addEventListener("click", () => {
         state.mode = "HAND";
         state.order = buildOrder("HAND"); // uses stored ids
@@ -2554,6 +2615,7 @@
 
       // keyboard
       document.addEventListener("keydown", (e) => {
+        // settings open: only Esc
         if (el.settingsOverlay && !el.settingsOverlay.classList.contains("hidden")){
           if (e.key === "Escape"){
             e.preventDefault();
@@ -2562,6 +2624,11 @@
           return;
         }
 
+        // typing focus: do not hijack keys (fix: allow typing "c" and spaces)
+        const ae = document.activeElement;
+        const isTyping = ae && (ae.tagName === "INPUT" || ae.tagName === "TEXTAREA" || ae.isContentEditable);
+
+        // global escape to title
         if (e.key === "Escape"){
           if (state.view !== "TITLE"){
             e.preventDefault();
@@ -2570,26 +2637,26 @@
           return;
         }
 
-        if (state.view === "QUIZ"){
-          if (e.key === " "){
+        if (state.view !== "QUIZ") return;
+
+        // Hand mode: only Enter triggers judge (or Enter again to go next). NO SPACE judge.
+        if (state.mode === "HAND"){
+          if (e.key === "Enter"){
             e.preventDefault();
-            primaryAction();
+            if (!state.hand.checked) checkHand();
+            else next();
             return;
           }
 
-          if (state.mode === "HAND"){
-            if (e.key === "Enter"){
-              e.preventDefault();
-              if (!state.hand.checked) checkHand();
-              else next();
-              return;
-            }
-            if (e.key.toLowerCase() === "c"){
-              e.preventDefault();
-              ensureCanvasReady();
-              clearCanvas();
-              return;
-            }
+          // allow typing keys freely when input is focused
+          if (isTyping) return;
+
+          // optional shortcut: clear canvas with C only when not typing
+          if (e.key && e.key.toLowerCase() === "c"){
+            e.preventDefault();
+            ensureCanvasReady();
+            clearCanvas();
+            return;
           }
 
           if (e.key === "ArrowRight"){
@@ -2602,6 +2669,27 @@
             prev();
             return;
           }
+
+          // Do not use Space for anything in HAND mode
+          return;
+        }
+
+        // Non-hand modes: Space toggles answer
+        if (isTyping) return;
+        if (e.key === " "){
+          e.preventDefault();
+          primaryAction();
+          return;
+        }
+        if (e.key === "ArrowRight"){
+          e.preventDefault();
+          next();
+          return;
+        }
+        if (e.key === "ArrowLeft"){
+          e.preventDefault();
+          prev();
+          return;
         }
       });
 
