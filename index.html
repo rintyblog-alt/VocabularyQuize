@@ -9667,6 +9667,7 @@ function _openSearchResultByIndex(i){
               <div class="drawer-share-row">
                 <button class="btn" type="button" id="drawerShareCreateBtn" data-share-action="create">共有コードを作成</button>
               </div>
+              <div id="drawerShareCreateState" class="drawer-share-status">create status: idle</div>
 
               <div id="drawerShareSendStatus" class="drawer-share-status" aria-live="polite"></div>
 
@@ -10027,17 +10028,14 @@ function _openSearchResultByIndex(i){
       }
       function _drawerShareMakeLink(code){
         const c = _drawerShareSanitizeCode(code);
-        let base = "";
         try{
-          if (location.protocol === "file:"){
-            base = String(location.href || "").split("#")[0];
-          } else {
-            base = `${location.origin}${location.pathname}${location.search || ""}`;
+          if (location && location.origin && location.pathname){
+            return `${location.origin}${location.pathname}#share=${encodeURIComponent(c)}`;
           }
         }catch{
-          base = "";
+          // fall through
         }
-        return `${base}#share=${encodeURIComponent(c)}`;
+        return `#share=${encodeURIComponent(c)}`;
       }
       function _drawerShareCodeFromHash(){
         try{
@@ -10060,6 +10058,15 @@ function _openSearchResultByIndex(i){
         elx.classList.remove("ok","error");
         if (kind === "ok") elx.classList.add("ok");
         if (kind === "error") elx.classList.add("error");
+      }
+      function _drawerShareSetCreateState(state, detail, isError){
+        const elx = document.getElementById("drawerShareCreateState");
+        if (!elx) return;
+        const base = `create status: ${String(state || "idle")}`;
+        elx.textContent = detail ? `${base} / ${String(detail)}` : base;
+        elx.classList.remove("ok","error");
+        if (isError) elx.classList.add("error");
+        else if (state === "saved" || state === "ui-updated") elx.classList.add("ok");
       }
       function _drawerShareCacheGet(presetId){
         const pid = String(presetId || "");
@@ -10160,10 +10167,16 @@ function _openSearchResultByIndex(i){
         const expiresAtTs = window.firebase.firestore.Timestamp.fromMillis(expiresAtMs);
         const createdAtTs = window.firebase.firestore.FieldValue.serverTimestamp();
 
-        for (let i=0;i<30;i++){
+        for (let i=0;i<10;i++){
           const code = _drawerShareGenerateCode();
+          const ref = db.collection("shares").doc(code);
           try{
-            await db.collection("shares").doc(code).create({
+            const exists = await ref.get();
+            if (exists && exists.exists){
+              _drawerShareSetCreateState("collision", `retry ${i+1}/10`);
+              continue;
+            }
+            await ref.set({
               appVersion,
               schemaVersion: 1,
               createdAt: createdAtTs,
@@ -10173,17 +10186,33 @@ function _openSearchResultByIndex(i){
             const entry = {
               code,
               shareLink: _drawerShareMakeLink(code),
+              shareUrl: _drawerShareMakeLink(code),
               expiresAt: expiresAtMs
             };
             _drawerShareCacheSet(pid, entry);
+            _drawerShareSetCreateState("saved");
             return { ...entry, reused: false };
           }catch(err){
-            const s = String(err?.code || err?.message || "");
-            if (/already[-_ ]exists|ALREADY_EXISTS/i.test(s)) continue;
+            const s = String(err?.code || err?.message || "").toLowerCase();
+            if (/already[-_ ]exists|alread[y_ -]?exists/.test(s)){
+              _drawerShareSetCreateState("collision", `retry ${i+1}/10`);
+              continue;
+            }
+            if (/permission[-_ ]denied/.test(s)){
+              try{
+                const again = await ref.get();
+                if (again && again.exists){
+                  _drawerShareSetCreateState("collision", `retry ${i+1}/10`);
+                  continue;
+                }
+              }catch{}
+            }
             throw err;
           }
         }
-        throw new Error("共有コードの生成に失敗しました。時間をおいて再試行してください。");
+        const e = new Error("CODE_GEN_FAILED");
+        e.kind = "CODE_GEN_FAILED";
+        throw e;
       }
       function _drawerShareTsToMs(v){
         if (!v) return 0;
@@ -10405,12 +10434,14 @@ function _openSearchResultByIndex(i){
         _drawerShareRenderQROnce(entry.shareLink);
         _drawerShareRenderCountdown();
         _drawerShareStartTimer();
+        _drawerShareSetCreateState("ui-updated");
       }
       async function _drawerShareCreateNow(silent){
         const select = document.getElementById("drawerSharePresetSelect");
         const pid = String((select && select.value) || _menuState.presetShare.selectedPresetId || "");
         if (!pid){
           _drawerShareSetStatus("drawerShareSendStatus", "共有する My Preset を選択してください。", "error");
+          _drawerShareSetCreateState("failed", "共有する My Preset を選択してください。", true);
           return;
         }
         if (_menuState.presetShare.creating) return;
@@ -10418,6 +10449,7 @@ function _openSearchResultByIndex(i){
         const btn = document.getElementById("drawerShareCreateBtn");
         if (btn) btn.disabled = true;
         _drawerShareSetStatus("drawerShareSendStatus", "共有コードを作成中…");
+        _drawerShareSetCreateState("started");
         try{
           const entry = await _drawerShareCreateEntry(pid);
           _menuState.presetShare.selectedPresetId = pid;
@@ -10429,7 +10461,12 @@ function _openSearchResultByIndex(i){
           }
         }catch(err){
           console.warn("[DrawerShare] create failed:", err);
-          _drawerShareSetStatus("drawerShareSendStatus", "共有コードの作成に失敗しました。", "error");
+          const msgRaw = String(err?.message || "");
+          const msg = (msgRaw === "CODE_GEN_FAILED")
+            ? "共有コード作成に失敗しました（衝突が続きました）。"
+            : `共有コードの作成に失敗しました: ${msgRaw || "unknown error"}`;
+          _drawerShareSetStatus("drawerShareSendStatus", msg, "error");
+          _drawerShareSetCreateState("failed", msgRaw || "unknown error", true);
           _drawerShareRenderEntry(null);
           const qrStatus = document.getElementById("drawerShareQrStatus");
           if (qrStatus) qrStatus.textContent = "QR生成に失敗。コードで共有してください";
@@ -10470,6 +10507,7 @@ function _openSearchResultByIndex(i){
         if (!pid){
           _menuState.presetShare.entry = null;
           _drawerShareRenderEntry(null);
+          _drawerShareSetCreateState("idle");
           return;
         }
         const cached = _drawerShareCacheGet(pid);
@@ -10477,10 +10515,12 @@ function _openSearchResultByIndex(i){
           _menuState.presetShare.entry = cached;
           _drawerShareRenderEntry(cached);
           _drawerShareSetStatus("drawerShareSendStatus", "有効期限内の共有コードがあります。", "ok");
+          _drawerShareSetCreateState("ui-updated", "cached");
         } else {
           _menuState.presetShare.entry = null;
           _drawerShareRenderEntry(null);
           _drawerShareSetStatus("drawerShareSendStatus", "", "");
+          _drawerShareSetCreateState("idle");
         }
       }
       function _drawerShareInitView(){
